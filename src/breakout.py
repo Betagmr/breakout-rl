@@ -17,16 +17,16 @@ class BreakoutEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=1, shape=(5,), dtype=np.int32)
 
         # Env variables
-        self.ball_previous_y = None 
-        
+        self.ball_previous_y = None
+
     def step(self, action):
         if action == 0:
             action = ACTION_LEFT
         elif action == 1:
             action = ACTION_RIGHT
-        elif action == 2: 
+        elif action == 2:
             action = ACTION_NO_MOVE
-        
+
         if self.n_steps > 1000 and not self.is_down:
             action = randint(0, 2)
             print("No move")
@@ -40,11 +40,11 @@ class BreakoutEnv(gym.Env):
         self.current_state = get_map(obs_current)
 
         if info["lives"] != self.n_lives:
-            self.is_down = False 
+            self.is_down = False
             self.n_steps = 0
-            self.n_lives = info["lives"] 
+            self.n_lives = info["lives"]
 
-        if self.n_lives == 0: 
+        if self.n_lives == 4:
             done = True
 
         state = self.get_state(self.current_state, self.previous_state, done)
@@ -58,7 +58,7 @@ class BreakoutEnv(gym.Env):
         obs_current, *_, info = self.env.step(ACTION_FIRE_BALL)
 
         self.n_steps = 0
-        self.n_lives = 5 
+        self.n_lives = 5
         self.is_down = False
         self.previous_state = get_map(obs_prev)
         self.current_state = get_map(obs_current)
@@ -78,8 +78,8 @@ class BreakoutEnv(gym.Env):
         Returns a state vector:
             0: Ball is in left side
             1: Ball is in left inside the platform
-            2: Ball is in center of the platform 
-            3: Ball is in right inside the platform 
+            2: Ball is in center of the platform
+            3: Ball is in right inside the platform
             4: Ball is in right side
         """
         if done:
@@ -93,7 +93,9 @@ class BreakoutEnv(gym.Env):
             position = get_ball_position(self.current_state, previous_state)
 
         ball_x, _ = position
-        platform_left, platform_right, platform_center = get_platform_cords(current_state)
+        platform_left, platform_right, platform_center = get_platform_cords(
+            current_state
+        )
 
         return np.array(
             [
@@ -105,12 +107,12 @@ class BreakoutEnv(gym.Env):
             ],
             dtype=np.int32,
         )
-    
+
     def get_reward(self, current_state, previous_state, done):
         if done:
             self.is_down = False
             return -10
-        
+
         _, y_position = get_ball_position(current_state, previous_state)
 
         if not self.is_down and 143 < y_position < 145:
@@ -119,5 +121,5 @@ class BreakoutEnv(gym.Env):
         if self.is_down and 135 < y_position < 143:
             self.is_down = False
             return 10
-        
+
         return 0
